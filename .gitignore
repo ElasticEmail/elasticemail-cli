@@ -1,0 +1,23 @@
+# Dependencies and build output
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Generated at pack time (see package.json prepack/postpack)
+oclif.manifest.json
+*.tgz
+
+# Secrets — never commit an API key
+.env
+.env.*
+.elastic-email-cli/
+
+# Test and tooling artifacts
+coverage/
+.eslintcache
+*.log
+
+# Editors and OS
+.DS_Store
+.vscode/
+.idea/

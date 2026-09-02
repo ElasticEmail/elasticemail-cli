@@ -1,0 +1,12 @@
+# Source and tooling are not shipped; only built output in /dist is published.
+src/
+test/
+.github/
+tsconfig.json
+vitest.config.ts
+eslint.config.js
+.prettierrc.json
+.gitignore
+.eslintcache
+coverage/
+*.tsbuildinfo

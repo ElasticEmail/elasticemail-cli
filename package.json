@@ -1,0 +1,116 @@
+{
+  "name": "elastic-email-cli",
+  "version": "0.1.0",
+  "description": "Interactive CLI for the Elastic Email API",
+  "keywords": [
+    "elastic-email",
+    "email",
+    "cli",
+    "oclif",
+    "ink",
+    "transactional-email"
+  ],
+  "license": "MIT",
+  "author": "Karol Szczycinski",
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "bin": {
+    "elastic-email": "./bin/run.js"
+  },
+  "files": [
+    "/bin",
+    "/dist",
+    "/oclif.manifest.json",
+    "/README.md"
+  ],
+  "scripts": {
+    "build": "shx rm -rf dist && tsc -p tsconfig.json",
+    "build:watch": "tsc -p tsconfig.json --watch",
+    "dev": "node --import tsx ./bin/dev.js",
+    "lint": "eslint .",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\"",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "manifest": "oclif manifest",
+    "prepack": "npm run build && oclif manifest",
+    "postpack": "shx rm -f oclif.manifest.json",
+    "prepublishOnly": "npm run build && npm run test"
+  },
+  "dependencies": {
+    "@oclif/core": "^4.0.34",
+    "@oclif/plugin-autocomplete": "^3.2.11",
+    "@oclif/plugin-help": "^6.2.18",
+    "axios": "^1.7.9",
+    "chalk": "^5.4.1",
+    "figlet": "^1.8.0",
+    "ink": "^5.1.0",
+    "ink-spinner": "^5.0.0",
+    "ink-text-input": "^6.0.0",
+    "react": "^18.3.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "@types/figlet": "^1.7.0",
+    "@types/node": "^20.17.10",
+    "@types/react": "^18.3.18",
+    "eslint": "^9.17.0",
+    "ink-testing-library": "^4.0.0",
+    "oclif": "^4.16.0",
+    "prettier": "^3.4.2",
+    "shx": "^0.3.4",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.1",
+    "vitest": "^2.1.8"
+  },
+  "oclif": {
+    "bin": "elastic-email",
+    "dirname": "elastic-email",
+    "commands": "./dist/commands",
+    "helpClass": "./dist/help",
+    "topicSeparator": " ",
+    "plugins": [
+      "@oclif/plugin-help",
+      "@oclif/plugin-autocomplete"
+    ],
+    "topics": {
+      "auth": {
+        "description": "Configure and inspect Elastic Email API authentication"
+      },
+      "emails": {
+        "description": "Send emails and check delivery status"
+      },
+      "account": {
+        "description": "Inspect account usage and statistics"
+      },
+      "templates": {
+        "description": "Browse and manage email templates"
+      },
+      "contacts": {
+        "description": "Manage contacts"
+      },
+      "lists": {
+        "description": "Manage contact lists"
+      },
+      "domains": {
+        "description": "Inspect sender domains and their verification status"
+      },
+      "suppressions": {
+        "description": "Manage suppressions (bounces, complaints, unsubscribes)"
+      },
+      "events": {
+        "description": "Browse delivery events"
+      }
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/elastic-email-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-org/elastic-email-cli/issues"
+  },
+  "homepage": "https://github.com/your-org/elastic-email-cli#readme"
+}
