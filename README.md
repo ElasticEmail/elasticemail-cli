@@ -1,19 +1,24 @@
-# elastic-email-cli
+<h1 align="center">
+  Elastic Email CLI
+</h1>
+<p align="center">A command-line interface for the <a href="https://elasticemail.com/developers/api-documentation/rest-api">Elastic Email API</a>: send transactional emails and campaigns, manage templates, contacts, lists and segments, track delivery — interactively or fully scripted.
 
-Elastic Email from your terminal.
+<p align="center">
+<a href="http://www.opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-brightgreen.svg" alt="License: MIT"></a>
+</p>
 
-A command-line interface for the [Elastic Email API](https://elasticemail.com/developers/api-documentation/rest-api): send transactional emails and campaigns, manage templates, contacts, lists and segments, track delivery — interactively or fully scripted.
 
 ### Key Features
 
 - **Interactive mode**. Run `elastic-email` with no arguments to get a keyboard-driven TUI: browse everything, pick with arrows, and send email through a guided wizard.
 - **Script-friendly**. Every command supports `--json`, exit codes are stable, and piped/CI output carries no banner or decorations.
-- **Full sending toolkit**. Transactional emails, saved templates, and campaigns to whole lists or segments.
+- **Full sending toolkit**. From transactional emails, saved templates, and campaigns to whole lists or segments.
 
 ### Requirements
 
 - Node.js 20 or newer
-- An Elastic Email account and API key (dashboard → Settings → API)
+- An [Elastic Email](https://elasticemail.com) account and API key (dashboard → Settings → API)
+
 
 ## Getting Started
 
@@ -22,7 +27,7 @@ npm install -g elastic-email-cli
 elastic-email --help
 ```
 
-Or run it without installing:
+or run it without installing:
 
 ```bash
 npx elastic-email-cli --help
@@ -52,25 +57,25 @@ elastic-email auth clear                # remove the local config
 ```
 
 > ⚠️ `auth set-key` stores the key in plaintext at `~/.elastic-email-cli/config.json`
-> with `0600` permissions. Convenient, but not an OS keychain — treat the file as a
+> with `0600` permissions. Convenient, but not an OS keychain - treat the file as a
 > secret and prefer the `ELASTIC_EMAIL_API_KEY` environment variable in shared or CI
 > environments. The key is never printed to logs or errors (only a masked form).
 
 ## Interactive mode
 
-A bare invocation on a terminal opens the interactive mode (also available as `elastic-email tui`):
+A bare invocation in a terminal opens the interactive mode (also available as `elastic-email tui`):
 
 ```bash
 elastic-email
 ```
 
-- **↑/↓** move · **Enter** open/select · **←/→** pages · **Space** multi-select · **Esc** back · **q** quit
-- Browse templates, lists (and their contacts), contacts, segments (and their contacts), delivery events, verification results, sender domains, statistics, and account info
-- Guided send wizard: sender (with verified-domain hints), recipients — addresses, or multi-selected lists/segments on Marketing-plan accounts — content (text, HTML, or a saved template), review, send
-- Verify an email address interactively; **forget me** (`f` in Account info) removes the local config after confirmation
-- Prompts for an API key on first run
+- **↑/↓** move · **Enter** open/select · **←/→** pages · **Space** multi-select · **Esc** back · **q** quit.
+- Browse templates, lists (and their contacts), contacts, segments (and their contacts), delivery events, verification results, sender domains, statistics, and account info.
+- Guided send wizard: sender (with verified-domain hints), recipients - addresses, or multi-selected lists/segments on Marketing-plan accounts - content (text, HTML, or a saved template), review, send.
+- Verify an email address interactively; **forget me** (`f` in Account info) removes the local config after confirmation.
+- Prompts for an API key on first run.
 
-In pipes, redirects, and CI (no TTY) a bare invocation prints plain help instead — interactive mode never breaks scripted usage.
+In pipes, redirects, and CI (no TTY), a bare invocation prints plain help instead - interactive mode never breaks scripted usage.
 
 ## Demo
 
@@ -199,7 +204,7 @@ elastic-email account stats --days 7
 ### Pagination
 
 Every list command (`contacts list`, `templates list`, `segments list`, `events list`,
-`suppressions list`, `lists`, ...) paginates the same way — fetch the next page by
+`suppressions list`, `lists`, ...) paginates the same way - fetch the next page by
 incrementing `--page`:
 
 ```bash
@@ -210,7 +215,7 @@ elastic-email templates list --page 3 --page-size 10
 elastic-email contacts list --limit 10 --offset 20    # or raw limit/offset style
 ```
 
-An empty result means you've paged past the last item. In the interactive mode
+An empty result means you've paged past the last item. In interactive mode
 use **←/→** to switch pages.
 
 ## Exit codes
@@ -247,6 +252,9 @@ npm test
 ```
 
 Architecture notes, project layout, and development gotchas live in [CLAUDE.md](CLAUDE.md).
+
+## Issues & Feedback
+Feel free to [contact us](https://elasticemail.com/contact) if you encounter any issues with the library. Please leave comments, concerns and requests on the [Issues page](https://github.com/ElasticEmail/elasticemail-cli/issues).
 
 ## License
 
