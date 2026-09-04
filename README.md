@@ -1,5 +1,5 @@
 <h1 align="center">
-  Elastic Email CLI
+  <img src="./assets/elastic-email-cli.png" width="838" alt="Elastic Email CLI">
 </h1>
 <p align="center">A command-line interface for the <a href="https://elasticemail.com/developers/api-documentation/rest-api">Elastic Email API</a>: send transactional emails and campaigns, manage templates, contacts, lists and segments, track delivery — interactively or fully scripted.
 
