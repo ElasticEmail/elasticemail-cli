@@ -3,6 +3,12 @@ import { ElasticEmailClient, createClient } from '../api/client.js';
 import { ApiError, formatApiError } from '../api/errors.js';
 import { resolveApiKey, type ApiKeySource } from '../config/api-key.js';
 import { printBanner } from '../banner.js';
+import {
+  confirmQuestion,
+  decideConfirmation,
+  refusalMessage,
+  type ConfirmRequest,
+} from './confirm.js';
 import { ExitCode } from './exit-codes.js';
 
 export type BaseFlags<T extends typeof Command> = Interfaces.InferredFlags<
@@ -79,6 +85,31 @@ export abstract class BaseCommand<T extends typeof Command> extends Command {
       source: resolved.source,
       key: resolved.key,
     };
+  }
+
+  /**
+   * Gates a destructive action. Returns true to proceed, false if the user
+   * declined at the prompt. Exits with {@link ExitCode.InvalidInput} when there
+   * is no interactive terminal and --yes was not passed.
+   *
+   * Requires `...confirmFlags` in the command's static flags.
+   */
+  protected async confirmDestructive(request: ConfirmRequest): Promise<boolean> {
+    const yes = Boolean((this.flags as Record<string, unknown>).yes);
+    const decision = decideConfirmation({
+      yes,
+      stdinIsTty: Boolean(process.stdin.isTTY),
+      stdoutIsTty: this.isTty,
+      json: this.jsonEnabled(),
+    });
+
+    if (decision === 'proceed') return true;
+    if (decision === 'refuse') {
+      this.error(refusalMessage(request), { exit: ExitCode.InvalidInput });
+    }
+
+    const { promptConfirm } = await import('../ui/ConfirmPrompt.js');
+    return promptConfirm(confirmQuestion(request));
   }
 
   /** Maps an unknown error to a clean message + exit code. Never leaks the key. */

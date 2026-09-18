@@ -1,4 +1,5 @@
 import { BaseCommand } from '../../lib/base-command.js';
+import { confirmFlags } from '../../lib/confirm.js';
 import { clearConfig, getConfigPath } from '../../config/config.js';
 
 interface ClearResult {
@@ -14,8 +15,20 @@ export default class AuthClear extends BaseCommand<typeof AuthClear> {
 
   static override examples = ['<%= config.bin %> auth clear', '<%= config.bin %> auth clear --json'];
 
+  static override flags = { ...confirmFlags };
+
   async run(): Promise<ClearResult> {
     const path = getConfigPath();
+
+    const confirmed = await this.confirmDestructive({
+      action: `remove the stored API key and defaults from ${path}`,
+      warning: 'The ELASTIC_EMAIL_API_KEY environment variable is not affected.',
+    });
+    if (!confirmed) {
+      if (!this.jsonEnabled()) this.log('Cancelled — nothing was changed.');
+      return { cleared: false, path };
+    }
+
     const cleared = clearConfig();
     const result: ClearResult = { cleared, path };
 

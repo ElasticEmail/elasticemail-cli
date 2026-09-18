@@ -1,5 +1,6 @@
 import { Args } from '@oclif/core';
 import { BaseCommand } from '../../lib/base-command.js';
+import { confirmFlags } from '../../lib/confirm.js';
 import { withSpinner } from '../../ui/spinner.js';
 
 interface DeleteResult {
@@ -19,8 +20,19 @@ export default class ListsDelete extends BaseCommand<typeof ListsDelete> {
     name: Args.string({ description: 'Name of the list to delete.', required: true }),
   };
 
+  static override flags = { ...confirmFlags };
+
   async run(): Promise<DeleteResult> {
     const { client } = this.requireClient();
+
+    const confirmed = await this.confirmDestructive({
+      action: `delete list "${this.args.name}"`,
+      warning: 'The list will be removed; its contacts are kept.',
+    });
+    if (!confirmed) {
+      if (!this.jsonEnabled()) this.log('Cancelled — nothing was changed.');
+      return { deleted: false, name: this.args.name };
+    }
 
     try {
       const task = client.deleteList(this.args.name);

@@ -57,6 +57,8 @@ Each command follows the same shape — copy an existing one (e.g.
 
 1. validate input → `this.error(msg, { exit: ExitCode.InvalidInput })`
 2. `const { client } = this.requireClient()`
+2b. destructive commands: spread `...confirmFlags` and `await this.confirmDestructive({action})`
+    before the API call; return early with `deleted: false` when it resolves false
 3. `this.interactive ? await withSpinner(label, task) : await task`, errors via `this.fail(err)`
 4. return a JSON-serializable result; print human output only when `!this.jsonEnabled()`
 5. list commands: spread `...paginationFlags`, use `resolvePagination()` and `renderTable()`
@@ -97,6 +99,15 @@ input, 4 API/network error. Tests/CI rely on them.
   see `src/api/types.ts`) can be email content; landing-page types can't be
   sent. Template lists/pickers filter to these server-side via repeated
   `templateTypes` query params (`templates list --all` disables the filter).
+- **Confirmation needs BOTH streams to be a TTY.** `this.interactive` only checks
+  `stdout`, which is right for banners/spinners but wrong for prompts: with
+  `echo | elastic-email contacts delete x` stdout is still a TTY, so an Ink
+  prompt would read "y" from the pipe and self-confirm. `decideConfirmation()`
+  in `src/lib/confirm.ts` requires `stdin` too — use it, not `this.interactive`,
+  for anything that asks a question.
+- **Destructive commands refuse rather than guess.** No TTY (CI, pipe, `--json`)
+  and no `--yes` → exit 3, nothing happens. Adding a new destructive command
+  means adding the guard; it is not automatic.
 - **No segment-contacts endpoint in v4.** `GET /segments/{name}/contacts` is a
   404; segment membership is read via `GET /contacts?rule=<segment Rule>`
   (see `segments contacts` and the TUI segment screen).

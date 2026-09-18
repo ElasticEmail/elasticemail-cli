@@ -111,7 +111,7 @@ elastic-email emails send --to a@example.com --subject Hi --text Hello --from me
 ```bash
 elastic-email auth set-key [key]        # store the API key (interactive without [key])
 elastic-email auth status               # key source + live connection test
-elastic-email auth clear                # remove the locally stored config
+elastic-email auth clear                # remove the local config (asks for confirmation)
 ```
 
 ### Sending
@@ -147,7 +147,7 @@ elastic-email templates get <name>      # metadata (--body prints the full body)
 elastic-email templates create <name> --html-file <path>
                                         # create an HTML template ("-" reads stdin)
 elastic-email templates create <name> --html "<h1>Hi</h1>" --subject <s>
-elastic-email templates delete <name>
+elastic-email templates delete <name>   # asks for confirmation (--yes to skip)
 ```
 
 ### Contacts & lists
@@ -158,11 +158,11 @@ elastic-email contacts get <email>
 elastic-email contacts add <email> --first-name <n> --list <list>
 elastic-email contacts add "a@x.com,b@x.com" --list <list>
                                         # comma-separated batch
-elastic-email contacts delete <email>
+elastic-email contacts delete <email>   # asks for confirmation (--yes to skip)
 elastic-email lists                     # your contact lists
 elastic-email lists contacts <name>     # contacts that belong to a list
 elastic-email lists create <name> --allow-unsubscribe
-elastic-email lists delete <name>       # contacts themselves are kept
+elastic-email lists delete <name>       # contacts are kept; asks for confirmation
 ```
 
 ### Segments
@@ -179,7 +179,7 @@ elastic-email suppressions list         # all suppressed addresses
 elastic-email suppressions list --type bounces --search <text>
 elastic-email suppressions add <email> --type unsubscribes
 elastic-email suppressions delete <email>
-                                        # allow sending to the address again
+                                        # allow sending again; asks for confirmation
 ```
 
 ### Delivery events & verification
@@ -218,6 +218,36 @@ elastic-email contacts list --limit 10 --offset 20    # or raw limit/offset styl
 An empty result means you've paged past the last item. In interactive mode
 use **←/→** to switch pages.
 
+## Destructive commands
+
+`contacts delete`, `lists delete`, `templates delete`, `suppressions delete` and
+`auth clear` ask before they act:
+
+```bash
+$ elastic-email contacts delete jane@example.com
+Delete contact jane@example.com? This cannot be undone. [y/N]
+```
+
+Enter or `n` cancels, `y` proceeds. Pass `--yes` (or `-y`) to skip the question.
+
+When there is no terminal to ask — CI, a pipe, or `--json` — the command
+**refuses** rather than guessing, and nothing is deleted:
+
+```
+$ elastic-email contacts delete jane@example.com     # in CI
+Error: Refusing to delete contact jane@example.com without confirmation
+       — not an interactive terminal. Pass --yes to confirm.
+```
+
+So automation has to state the intent explicitly:
+
+```bash
+elastic-email contacts delete jane@example.com --yes
+```
+
+This also makes destructive steps greppable in a pipeline: every place that
+deletes something carries a visible `--yes`.
+
 ## Exit codes
 
 | Code | Meaning                                  |
@@ -227,6 +257,8 @@ use **←/→** to switch pages.
 | `2`  | No API key found                         |
 | `3`  | Invalid input (bad email, missing field) |
 | `4`  | Elastic Email API / network error        |
+
+A destructive command refused for lack of confirmation exits `3`.
 
 ## Configuration via env
 

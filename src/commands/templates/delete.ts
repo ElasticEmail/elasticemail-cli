@@ -1,5 +1,6 @@
 import { Args } from '@oclif/core';
 import { BaseCommand } from '../../lib/base-command.js';
+import { confirmFlags } from '../../lib/confirm.js';
 import { withSpinner } from '../../ui/spinner.js';
 
 interface DeleteResult {
@@ -19,8 +20,18 @@ export default class TemplatesDelete extends BaseCommand<typeof TemplatesDelete>
     name: Args.string({ description: 'Template name.', required: true }),
   };
 
+  static override flags = { ...confirmFlags };
+
   async run(): Promise<DeleteResult> {
     const { client } = this.requireClient();
+
+    const confirmed = await this.confirmDestructive({
+      action: `delete template "${this.args.name}"`,
+    });
+    if (!confirmed) {
+      if (!this.jsonEnabled()) this.log('Cancelled — nothing was changed.');
+      return { deleted: false, name: this.args.name };
+    }
 
     try {
       const task = client.deleteTemplate(this.args.name);
