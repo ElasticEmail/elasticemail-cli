@@ -290,7 +290,7 @@ npm run dev -- <command>                # same via npm (the -- is required)
 npm test
 ```
 
-Architecture notes, project layout, and development gotchas live in [CLAUDE.md](CLAUDE.md).
+Architecture notes, project layout, and development gotchas live in [CLAUDE.md](CLAUDE.md). See [CONTRIBUTING.md](CONTRIBUTING.md) for how to report bugs and open pull requests, and please follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Issues & Feedback
 Feel free to [contact us](https://elasticemail.com/contact) if you encounter any issues with the library. Please leave comments, concerns and requests on the [Issues page](https://github.com/ElasticEmail/elasticemail-cli/issues).
