@@ -4,6 +4,7 @@
 <p align="center">A command-line interface for the <a href="https://elasticemail.com/developers/api-documentation/rest-api">Elastic Email API</a>: send transactional emails and campaigns, manage templates, contacts, lists and segments, track delivery — interactively or fully scripted.
 
 <p align="center">
+<a href="https://github.com/ElasticEmail/elasticemail-cli/actions/workflows/ci.yml"><img src="https://github.com/ElasticEmail/elasticemail-cli/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
 <a href="https://www.npmjs.com/package/elastic-email-cli"><img src="https://img.shields.io/npm/v/elastic-email-cli.svg" alt="npm version"></a>
 <a href="https://www.npmjs.com/package/elastic-email-cli"><img src="https://img.shields.io/npm/dm/elastic-email-cli.svg" alt="npm downloads"></a>
 <a href="https://nodejs.org"><img src="https://img.shields.io/node/v/elastic-email-cli.svg" alt="Node.js version"></a>

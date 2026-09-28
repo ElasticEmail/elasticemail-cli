@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        node-version: [20.x, 22.x, 24.x]
+        include:
+          - os: macos-latest
+            node-version: 22.x
+          - os: windows-latest
+            node-version: 22.x
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - run: npm test
+
+      - name: Smoke test compiled CLI
+        shell: bash
+        run: |
+          node ./bin/run.js --version
+          node ./bin/run.js --help >/dev/null
+
+      - name: Check package contents
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == '22.x'
+        run: npm pack --dry-run
