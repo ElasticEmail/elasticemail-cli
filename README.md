@@ -4,7 +4,12 @@
 <p align="center">A command-line interface for the <a href="https://elasticemail.com/developers/api-documentation/rest-api">Elastic Email API</a>: send transactional emails and campaigns, manage templates, contacts, lists and segments, track delivery — interactively or fully scripted.
 
 <p align="center">
+<a href="https://www.npmjs.com/package/elastic-email-cli"><img src="https://img.shields.io/npm/v/elastic-email-cli.svg" alt="npm version"></a>
+<a href="https://www.npmjs.com/package/elastic-email-cli"><img src="https://img.shields.io/npm/dm/elastic-email-cli.svg" alt="npm downloads"></a>
+<a href="https://nodejs.org"><img src="https://img.shields.io/node/v/elastic-email-cli.svg" alt="Node.js version"></a>
+<a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white" alt="TypeScript"></a>
 <a href="http://www.opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-brightgreen.svg" alt="License: MIT"></a>
+<a href="https://github.com/ElasticEmail/elasticemail-cli/issues"><img src="https://img.shields.io/github/issues/ElasticEmail/elasticemail-cli.svg" alt="GitHub issues"></a>
 </p>
 
 
@@ -21,6 +26,8 @@
 
 
 ## Getting Started
+
+Install the [`elastic-email-cli`](https://www.npmjs.com/package/elastic-email-cli) package from npm:
 
 ```bash
 npm install -g elastic-email-cli
