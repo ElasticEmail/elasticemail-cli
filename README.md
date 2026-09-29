@@ -24,6 +24,7 @@
 
 - Node.js 20 or newer
 - An [Elastic Email](https://elasticemail.com) account and API key (dashboard → Settings → API)
+- A [verified sending domain](https://help.elasticemail.com/en/articles/4934400-how-to-verify-your-domain). Elastic Email only sends from verified domains, so your `--from` address must use one.
 
 
 ## Getting Started
@@ -44,8 +45,8 @@ npx elastic-email-cli --help
 ### Install from source
 
 ```bash
-git clone https://github.com/your-org/elastic-email-cli.git
-cd elastic-email-cli
+git clone https://github.com/ElasticEmail/elasticemail-cli.git
+cd elasticemail-cli
 npm install
 npm run build
 npm link                                # makes the elastic-email command available globally
