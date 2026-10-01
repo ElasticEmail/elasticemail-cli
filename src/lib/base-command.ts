@@ -1,7 +1,7 @@
 import { Command, Flags, type Interfaces } from '@oclif/core';
 import { ElasticEmailClient, createClient } from '../api/client.js';
 import { ApiError, formatApiError } from '../api/errors.js';
-import { resolveApiKey, type ApiKeySource } from '../config/api-key.js';
+import { API_KEY_ENV_VAR, resolveApiKey, type ApiKeySource } from '../config/api-key.js';
 import { printBanner } from '../banner.js';
 import {
   confirmQuestion,
@@ -9,6 +9,13 @@ import {
   refusalMessage,
   type ConfirmRequest,
 } from './confirm.js';
+import {
+  apiKeyFromArgv,
+  isSignalExit,
+  resolveExitCode,
+  toErrorPayload,
+  type ErrorPayload,
+} from './error-json.js';
 import { ExitCode } from './exit-codes.js';
 
 export type BaseFlags<T extends typeof Command> = Interfaces.InferredFlags<
@@ -40,6 +47,7 @@ export abstract class BaseCommand<T extends typeof Command> extends Command {
   protected args!: BaseArgs<T>;
 
   public override async init(): Promise<void> {
+    if (this.jsonEnabled()) this.installJsonSignalHandlers();
     await super.init();
     const { args, flags } = await this.parse({
       flags: this.ctor.flags,
@@ -89,7 +97,7 @@ export abstract class BaseCommand<T extends typeof Command> extends Command {
 
   /**
    * Gates a destructive action. Returns true to proceed, false if the user
-   * declined at the prompt. Exits with {@link ExitCode.InvalidInput} when there
+   * declined at the prompt. Exits with {@link ExitCode.ConfirmationRequired} when there
    * is no interactive terminal and --yes was not passed.
    *
    * Requires `...confirmFlags` in the command's static flags.
@@ -105,11 +113,55 @@ export abstract class BaseCommand<T extends typeof Command> extends Command {
 
     if (decision === 'proceed') return true;
     if (decision === 'refuse') {
-      this.error(refusalMessage(request), { exit: ExitCode.InvalidInput });
+      this.error(refusalMessage(request), { exit: ExitCode.ConfirmationRequired });
     }
 
     const { promptConfirm } = await import('../ui/ConfirmPrompt.js');
     return promptConfirm(confirmQuestion(request));
+  }
+
+  /**
+   * Normalizes the exit code for every error, in both output modes:
+   *  - oclif parse errors (exit 2 by default) become InvalidInput, so they
+   *    no longer collide with MissingApiKey;
+   *  - in --json mode oclif reads `err.exitCode`, which its own errors never
+   *    set, so without this every JSON error exited 1.
+   */
+  override async catch(err: any): Promise<any> {
+    const exitCode = resolveExitCode(err);
+    if (exitCode === 0) {
+      process.exitCode = 0;
+      return;
+    }
+    if (isSignalExit(exitCode) && !this.jsonEnabled()) {
+      // An interruption is not a failure: no "Error:" banner, just end the
+      // prompt line so the shell prompt does not glue onto it.
+      if (process.stdout.isTTY) process.stdout.write('\n');
+      process.exitCode = exitCode;
+      return;
+    }
+    if (err?.oclif) err.oclif.exit = exitCode; // read by the top-level handler (non-JSON)
+    process.exitCode = exitCode; // read by oclif's catch (JSON)
+    return super.catch(err);
+  }
+
+  /**
+   * In --json mode a signal would otherwise kill the process with an empty
+   * stdout. Emit the documented error body instead, then exit 130 / 143.
+   * Plain mode keeps Node's default: the shell already reports 130 / 143.
+   */
+  private installJsonSignalHandlers(): void {
+    const handler = (exitCode: number, message: string) => () => {
+      this.logJson(this.toErrorJson(Object.assign(new Error(message), { oclif: { exit: exitCode } })));
+      process.exit(exitCode);
+    };
+    process.once('SIGINT', handler(ExitCode.Interrupted, 'Interrupted (SIGINT).'));
+    process.once('SIGTERM', handler(ExitCode.Terminated, 'Terminated (SIGTERM).'));
+  }
+
+  /** `--json` error body: `{ error: { code, exitCode, message } }`, secrets masked. */
+  protected override toErrorJson(err: unknown): ErrorPayload {
+    return toErrorPayload(err, [process.env[API_KEY_ENV_VAR], apiKeyFromArgv(this.argv)]);
   }
 
   /** Maps an unknown error to a clean message + exit code. Never leaks the key. */

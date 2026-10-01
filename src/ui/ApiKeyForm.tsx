@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Box, Text, render, useApp, useInput } from 'ink';
 import TextInput from 'ink-text-input';
 import { maskApiKey } from '../config/api-key.js';
+import { InterruptedError } from '../lib/error-json.js';
 
 interface ApiKeyFormProps {
   initial?: string;
@@ -66,7 +67,7 @@ function ApiKeyForm({ initial = '', onSubmit, onCancel }: ApiKeyFormProps) {
  * `null` if the user cancelled (Esc).
  */
 export function promptApiKey(initial = ''): Promise<string | null> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const instance = render(
       <ApiKeyForm
         initial={initial}
@@ -80,6 +81,12 @@ export function promptApiKey(initial = ''): Promise<string | null> {
         }}
       />,
     );
+    // Ctrl+C: Ink unmounts on its own without calling our callbacks. Reject
+    // with InterruptedError (exit 130) so the promise settles; otherwise Node
+    // exits reporting an "unsettled top-level await". A normal answer
+    // resolves synchronously first and wins.
+    const interrupted = () => reject(new InterruptedError());
+    void instance.waitUntilExit().then(interrupted, interrupted);
   });
 }
 

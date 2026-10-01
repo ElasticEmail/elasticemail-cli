@@ -1,4 +1,5 @@
 import { Box, Text, render, useApp, useInput } from 'ink';
+import { InterruptedError } from '../lib/error-json.js';
 
 interface ConfirmPromptProps {
   question: string;
@@ -32,7 +33,7 @@ function ConfirmPrompt({ question, onAnswer }: ConfirmPromptProps) {
 
 /** Renders the prompt and resolves with the user's answer. */
 export function promptConfirm(question: string): Promise<boolean> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const instance = render(
       <ConfirmPrompt
         question={question}
@@ -42,6 +43,12 @@ export function promptConfirm(question: string): Promise<boolean> {
         }}
       />,
     );
+    // Ctrl+C: Ink unmounts on its own without calling our callbacks. Reject
+    // with InterruptedError (exit 130) so the promise settles; otherwise Node
+    // exits reporting an "unsettled top-level await". A normal answer
+    // resolves synchronously first and wins.
+    const interrupted = () => reject(new InterruptedError());
+    void instance.waitUntilExit().then(interrupted, interrupted);
   });
 }
 

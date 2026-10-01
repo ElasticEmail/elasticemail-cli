@@ -64,7 +64,7 @@ Each command follows the same shape — copy an existing one (e.g.
 5. list commands: spread `...paginationFlags`, use `resolvePagination()` and `renderTable()`
 
 Exit codes (`src/lib/exit-codes.ts`): 0 ok, 1 general, 2 missing key, 3 invalid
-input, 4 API/network error. Tests/CI rely on them.
+input, 4 API/network error, 5 confirmation required, 130 interrupted, 143 terminated. Tests/CI rely on them.
 
 ## Hard-won gotchas (do not relearn these)
 
@@ -92,6 +92,24 @@ input, 4 API/network error. Tests/CI rely on them.
 - The `--json` / non-TTY contract: no banner, no Ink, no decorations — output
   must stay pipe- and CI-safe. `shouldShowBanner()` in `src/banner.ts` is the
   single guard; it's unit-tested.
+- **`--json` errors are built by us, not oclif.** `BaseCommand` overrides
+  `toErrorJson()` → `{ error: { code, exitCode, message } }` (see
+  `src/lib/error-json.ts`) and `catch()`. The oclif defaults were broken twice:
+  `toErrorJson` serialized the whole error, including the parser's argv/config
+  (~190 KB, and it leaked the `--api-key` value on any flag typo), and `catch`
+  read `err.exitCode`, which oclif never sets, so every JSON error exited 1.
+  oclif's own parse errors default to exit 2 (= our MissingApiKey);
+  `resolveExitCode()` reclassifies them as 3. `error.code` names in
+  `ERROR_CODE_NAMES` are public contract — never rename.
+- **Ctrl+C at an Ink prompt is not a SIGINT.** Ink puts stdin in raw mode and
+  unmounts itself on Ctrl+C without calling the component's callbacks. Every
+  `prompt*()` helper must settle its promise on `waitUntilExit()` — rejecting
+  with `InterruptedError` (exit 130) — or Node exits with "unsettled top-level
+  await". `BaseCommand.catch` exits 130/143 quietly in plain mode (no "Error:"
+  banner); in `--json` mode `installJsonSignalHandlers()` prints the error body
+  on SIGINT/SIGTERM. To test signals, kill a *hanging* request (point
+  `HTTPS_PROXY` at a TCP server that never answers); killing a fast command
+  usually hits an already-finished zombie and misleadingly shows exit 0.
 - **Never print the API key.** Use `maskApiKey()` for display and
   `formatApiError()` for errors (it appends the API's message but never
   headers/config). `toApiError` deliberately drops the axios config.
@@ -106,7 +124,7 @@ input, 4 API/network error. Tests/CI rely on them.
   in `src/lib/confirm.ts` requires `stdin` too — use it, not `this.interactive`,
   for anything that asks a question.
 - **Destructive commands refuse rather than guess.** No TTY (CI, pipe, `--json`)
-  and no `--yes` → exit 3, nothing happens. Adding a new destructive command
+  and no `--yes` → exit 5, nothing happens. Adding a new destructive command
   means adding the guard; it is not automatic.
 - **No segment-contacts endpoint in v4.** `GET /segments/{name}/contacts` is a
   404; segment membership is read via `GET /contacts?rule=<segment Rule>`

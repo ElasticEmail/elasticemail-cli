@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { ExitCode } from '../src/lib/exit-codes.js';
 import {
   confirmQuestion,
   decideConfirmation,
@@ -64,5 +65,12 @@ describe('refusalMessage', () => {
     const msg = refusalMessage({ action: 'delete contact a@b.co' });
     expect(msg).toContain('delete contact a@b.co');
     expect(msg).toContain('--yes');
+  });
+});
+
+describe('ExitCode.ConfirmationRequired', () => {
+  it('is 5 and distinct from InvalidInput, so agents can stop instead of retrying', () => {
+    expect(ExitCode.ConfirmationRequired).toBe(5);
+    expect(ExitCode.ConfirmationRequired).not.toBe(ExitCode.InvalidInput);
   });
 });

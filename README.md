@@ -259,15 +259,36 @@ deletes something carries a visible `--yes`.
 
 ## Exit codes
 
-| Code | Meaning                                  |
-| ---- | ---------------------------------------- |
-| `0`  | Success                                  |
-| `1`  | Unexpected/general error                 |
-| `2`  | No API key found                         |
-| `3`  | Invalid input (bad email, missing field) |
-| `4`  | Elastic Email API / network error        |
+| Exit | `error.code` (JSON)     | Meaning                                              |
+| ---- | ----------------------- | ---------------------------------------------------- |
+| `0`  | —                       | Success                                              |
+| `1`  | `general`               | Unexpected error                                     |
+| `2`  | `missing_api_key`       | No API key found                                     |
+| `3`  | `invalid_input`         | Invalid input: bad email, missing field, unknown flag |
+| `4`  | `api_error`             | Elastic Email API / network error                    |
+| `5`  | `confirmation_required` | Destructive command blocked (no `--yes`, no terminal) |
+| `130`| `interrupted`           | Interrupted: Ctrl+C (at a prompt or while running) or SIGINT |
+| `143`| `terminated`            | Terminated by SIGTERM (e.g. a CI timeout)            |
 
-A destructive command refused for lack of confirmation exits `3`.
+A destructive command refused for lack of confirmation exits `5`, so automation can
+stop and escalate for human approval instead of treating it as bad input and retrying.
+
+With `--json`, errors are printed to stdout in a fixed shape, and the process
+exits with the same code:
+
+```json
+{
+  "error": {
+    "code": "confirmation_required",
+    "exitCode": 5,
+    "message": "Refusing to delete template \"Old\" without confirmation — not an interactive terminal. Pass --yes to confirm."
+  }
+}
+```
+
+`code` names are stable — branch on them rather than on `message`. A signal in
+`--json` mode also produces this body (`interrupted` / `terminated`), so stdout
+is never left empty.
 
 ## Configuration via env
 
